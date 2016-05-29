@@ -1,17 +1,17 @@
-var http= require("http");
-var url = require("url");
-
+var express = require('express');
+var app = express();
 
 function start(route,handle){
-function onRequest(request,response) {
-	var pathName=url.parse(request.url).pathname;
-	console.log("Request"+ pathName +" Recieved.");
-	route(handle,pathName,response);
-	}
+	app.get('/', function (request, response) {
+	  	route(handle,'/',response);
+	});
+	app.get('/:var', function (request, response) {
+		
+	  	route(handle,'/'+request.param('var'),response);
+	});
 
-	http.createServer(onRequest).listen(8888);
-	console.log("server has started");
-	
-	}
+	app.listen(3000, function () {
+	});
+}
 
-	exports.start = start;
+exports.start = start;

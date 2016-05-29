@@ -1,8 +1,10 @@
+var exec = require("child_process").exec;
+var fs = require('fs');
+
 function start(response) {
-	console.log("Request handler ' start ' was called");
-	response.writeHead(200,{"ContentType" : "text/html"});
-	response.write("hello start");
-	response.end();
+	console.log("Request handler 'start' was called.");
+	
+	
 }
 
 
@@ -15,10 +17,13 @@ function upload(response) {
 }
 
 function find(response) {
-	console.log("Request handler ' find ' was called");
-	response.writeHead(200,{"ContentType" : "text/html"});
-	response.write("hello find");
-	response.end();
+	exec("find /",
+		{setTimeout : 10000 , maxBuffer : 20000*1024 },
+		function(error,stdout,stderr){
+			response.writeHead(200,{"Content-Type":"text/plain"});
+			response.write(stdout);
+			response.end();
+		});
 }
 
 function show(response) {
