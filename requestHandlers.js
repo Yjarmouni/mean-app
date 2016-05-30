@@ -1,5 +1,8 @@
 var exec = require("child_process").exec;
 var fs = require('fs');
+var jsrender = require('jsrender');
+
+var tmpl;
 
 function start(response) {
 	console.log("Request handler 'start' was called.");
@@ -7,11 +10,20 @@ function start(response) {
 	
 }
 
+function uploadPost(request,response,photo){
+	console.log("Request handler uploadPost was called");
+	tmpl = jsrender.templates('./views/model.html');
+	var content="<img src='"+photo+"'></img>";
+	var html = tmpl.render({content: content});
+	response.send(html);
+	response.end();
 
+}
 function upload(response) {
 	console.log("Request handler ' upload ' was called");
-	response.writeHead(200,{"ContentType" : "text/html"});
-	response.write("hello upload");
+	tmpl = jsrender.templates('./views/up.html');
+	var html = tmpl.render({param: "Jim",ss : "ok bye"});
+	response.send(html);
 	response.end();
 	
 }
@@ -53,4 +65,4 @@ exports.find = find;
 exports.show= show;
 exports.login=login;
 exports.logout=logout;
-
+exports.uploadPost=uploadPost;
