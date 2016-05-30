@@ -4,10 +4,9 @@ var bodyParser = require('body-parser');
 //app.use(express.static(__dirname + '/public'));
 //app.set('views', __dirname + '/views');
 //app.use('views/photos', express.static(__dirname +'/views/photos'));
-app.use(express.static('views'));
+app.use(express.static('public'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine' , 'jsrender');
-
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodi
 
@@ -33,8 +32,8 @@ function start(route,handle){
 
 
 	app.get('/:var', function (request, response) {
-		
-	  	route(handle,'/'+request.param('var'),response);
+		console.log("server "+request.body)
+	  	route(handle,'/'+request.params.var,response);
 	});
 
 	app.listen(3000, function () {

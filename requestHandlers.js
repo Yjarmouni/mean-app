@@ -1,13 +1,15 @@
 var exec = require("child_process").exec;
 var fs = require('fs');
 var jsrender = require('jsrender');
-var User = require("./user.js").User;
+var User = require("./models.js").User;
 
 var tmpl;
 
 function start(response) {
 	console.log("Request handler 'start' was called.");
-	response.render('index.html');
+	tmpl = jsrender.templates('./views/index.html');
+	html = tmpl.render({name : ""});	
+	response.send(html);
 	response.end();
 	
 }
@@ -50,13 +52,18 @@ function show(response) {
 function loginPost(request,response) {
 	User.findOne(request.body,function (err, user) {
 		if (err) return console.error(err);
-		if(!user)
-		  	console.log("noo!");
-		  else 
-		  	console.log(user)
-		});
-	;
-
+		var html;
+		if(!user){
+			tmpl = jsrender.templates('./views/login.html');
+			html = tmpl.render({message :"Username or password incorrect"});
+		}	
+		else{
+			tmpl = jsrender.templates('./views/index.html');
+			html = tmpl.render({name : user.name});
+				}
+		response.send(html);
+		response.end();
+	});
 }
 
 function login(response) {

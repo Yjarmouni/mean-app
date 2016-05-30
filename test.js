@@ -1,4 +1,6 @@
-var User = require("./user.js");
+var User = require("./user.js").User;
 
-User.find();
+User.find(function(err,user){
+	console.log(user);
+});
 	
