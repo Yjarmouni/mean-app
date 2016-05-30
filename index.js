@@ -12,6 +12,7 @@ handle["/show"]=requestHandlers.show;
 handle["/login"]=requestHandlers.login;
 handle["/logout"]=requestHandlers.logout;
 handle["uploadPost"]=requestHandlers.uploadPost;
+handle["loginPost"]=requestHandlers.loginPost;
 
 
 server.start(router.route,handle);
