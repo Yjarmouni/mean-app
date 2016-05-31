@@ -9,6 +9,9 @@ var db = mongoose.connection;
 
 var model = function(name,document){
 	var mySchema =  mongoose.Schema(document);
+	mySchema.statics.findAndModify = function (query, sort, doc, options, callback) {
+  			return this.collection.findAndModify(query, sort, doc, options, callback);
+	};
 	return mongoose.model(name,mySchema);
 }
 

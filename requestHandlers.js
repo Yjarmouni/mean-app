@@ -6,12 +6,13 @@ var User = require("./models.js").User;
 var tmpl;
 
 function start(request,response) {
-	console.log("Request handler 'start' was called.");
 	tmpl = jsrender.templates('./views/index.html');
 	var name="";
 	var sess=request.session;
 	if(sess.name)
-		name=sess.name+" <a href='/logout'>logout</a>";
+		name="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
+	else
+		name=" <a href='/login'>login</a>";
 	html = tmpl.render({name : name});	
 	response.send(html);
 	response.end();
@@ -19,7 +20,33 @@ function start(request,response) {
 }
 
 function uploadPost(request,response,photo){
-	console.log("Request handler uploadPost was called");
+
+	var document = {} ;
+
+	var name =request.session.name;
+	User.findOne({name :name},function(err,user){
+		console.log(user);
+		document = {
+			name : name,
+			photo : photo,
+			password : user.password
+		};
+
+		User.findAndModify({ name: name}, [], document, {}, function (err, user) {
+	  		if (err) throw err;
+	  		//exec('rm ' + __dirname+'/pubilic/'+user.value.photo , function (err, stdout, stderr) {});
+	  		if(user.value.photo!="photos/default"){
+	  			const fs = require('fs');
+				fs.unlink(__dirname+'/public/'+user.value.photo , (err) => {
+				  if (err) throw err;
+				  console.log('successfully deleted /tmp/hello');
+				});
+			}
+	  		console.log('updated, counter is ' + user.value.photo);
+		});
+	});
+	
+
 	tmpl = jsrender.templates('./views/model.html');
 	var content="<img src='"+photo+"'></img>";
 	var html = tmpl.render({content: content});
@@ -27,8 +54,8 @@ function uploadPost(request,response,photo){
 	response.end();
 
 }
+
 function upload(request, response) {
-	console.log("Request handler ' upload ' was called");
 	tmpl = jsrender.templates('./views/up.html');
 	var html = tmpl.render({param: "Jim",ss : "ok bye"});
 	response.send(html);
@@ -47,10 +74,16 @@ function find(request, response) {
 }
 
 function show(request, response) {
-	console.log("Request handler ' show ' was called");
-	response.writeHead(200,{"ContentType" : "text/html"});
-	response.write("hello show");
-	response.end();
+	var name = request.session.name;
+	User.findOne({name :name},function(err,user){
+		var photo = user.photo;
+		tmpl = jsrender.templates('./views/model.html');
+		var content="<img src='"+photo+"'></img>";
+		console.log(content);
+		var html = tmpl.render({content: content});
+		response.send(html);
+		response.end();
+	});
 }
 
 function loginPost(request,response) {
@@ -64,16 +97,16 @@ function loginPost(request,response) {
 		else{
 			sess=request.session;
 			sess.name=user.name;
+			var name ="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
 			tmpl = jsrender.templates('./views/index.html');
-			html = tmpl.render({name : sess.name});
-				}
+			html = tmpl.render({name : name});
+		}
 		response.send(html);
 		response.end();
 	});
 }
 
 function login(request, response) {
-	console.log("Request handler ' login ' was called");
 	tmpl = jsrender.templates('./views/login.html');
 	var html = tmpl.render();
 	response.send(html);
@@ -82,10 +115,9 @@ function login(request, response) {
 
 
 function logout(request, response) {
-	console.log("Request handler ' logout ' was called");
-	response.writeHead(200,{"ContentType" : "text/html"});
-	response.write("hello logout");
-	response.end();
+	sess=request.session;
+	sess.destroy();
+	response.redirect('/');
 }
 
 exports.start = start;

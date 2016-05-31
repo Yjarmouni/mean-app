@@ -34,7 +34,7 @@ function start(route,handle){
 	  	route(handle,'/',request, response);
 	});
 
-	app.post('/upload',multer({ dest: 'views/photos/'}).single('avatar'), function (request, response){
+	app.post('/upload',multer({ dest: 'public/photos/'}).single('avatar'), function (request, response){
 			console.log(request.file); //form fields
 			var photo="photos/"+request.file.filename;
 		handle["uploadPost"](request,response,photo);

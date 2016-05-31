@@ -2,7 +2,9 @@ var mon = require("./mongoConnect");
 
 document ={
 		name: String,
-		password : String}
+		password : String,
+		photo : String
+	}
 
 var User = mon.model('User',document);
 
