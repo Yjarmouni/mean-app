@@ -5,10 +5,14 @@ var User = require("./models.js").User;
 
 var tmpl;
 
-function start(response) {
+function start(request,response) {
 	console.log("Request handler 'start' was called.");
 	tmpl = jsrender.templates('./views/index.html');
-	html = tmpl.render({name : ""});	
+	var name="";
+	var sess=request.session;
+	if(sess.name)
+		name=sess.name+" <a href='/logout'>logout</a>";
+	html = tmpl.render({name : name});	
 	response.send(html);
 	response.end();
 	
@@ -23,7 +27,7 @@ function uploadPost(request,response,photo){
 	response.end();
 
 }
-function upload(response) {
+function upload(request, response) {
 	console.log("Request handler ' upload ' was called");
 	tmpl = jsrender.templates('./views/up.html');
 	var html = tmpl.render({param: "Jim",ss : "ok bye"});
@@ -32,7 +36,7 @@ function upload(response) {
 	
 }
 
-function find(response) {
+function find(request, response) {
 	exec("find /",
 		{setTimeout : 10000 , maxBuffer : 20000*1024 },
 		function(error,stdout,stderr){
@@ -42,7 +46,7 @@ function find(response) {
 		});
 }
 
-function show(response) {
+function show(request, response) {
 	console.log("Request handler ' show ' was called");
 	response.writeHead(200,{"ContentType" : "text/html"});
 	response.write("hello show");
@@ -50,23 +54,25 @@ function show(response) {
 }
 
 function loginPost(request,response) {
+	var html;
 	User.findOne(request.body,function (err, user) {
-		if (err) return console.error(err);
-		var html;
+		
 		if(!user){
 			tmpl = jsrender.templates('./views/login.html');
 			html = tmpl.render({message :"Username or password incorrect"});
 		}	
 		else{
+			sess=request.session;
+			sess.name=user.name;
 			tmpl = jsrender.templates('./views/index.html');
-			html = tmpl.render({name : user.name});
+			html = tmpl.render({name : sess.name});
 				}
 		response.send(html);
 		response.end();
 	});
 }
 
-function login(response) {
+function login(request, response) {
 	console.log("Request handler ' login ' was called");
 	tmpl = jsrender.templates('./views/login.html');
 	var html = tmpl.render();
@@ -75,7 +81,7 @@ function login(response) {
 }
 
 
-function logout(response) {
+function logout(request, response) {
 	console.log("Request handler ' logout ' was called");
 	response.writeHead(200,{"ContentType" : "text/html"});
 	response.write("hello logout");

@@ -1,14 +1,28 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
-//app.use(express.static(__dirname + '/public'));
-//app.set('views', __dirname + '/views');
-//app.use('views/photos', express.static(__dirname +'/views/photos'));
+var session = require('express-session');
+
+
 app.use(express.static('public'));
 app.engine('html', require('ejs').renderFile);
 app.set('view engine' , 'jsrender');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodi
+
+app.use(session({ secret: 'keyboard cat' }));
+app.all('/:var',function (request, response, next) {
+	var sess=request.session;
+	console.log(request.params.var);
+  if(sess.name||request.params.var=='login'){
+  	console.log("logged user");
+  	next();
+  }
+  else
+  	require("./requestHandlers").login(request,response);
+});
+
+
 
 
 function start(route,handle){
@@ -16,13 +30,14 @@ function start(route,handle){
 
 
 	app.get('/', function (request, response) {
-	  	route(handle,'/',response);
+		
+	  	route(handle,'/',request, response);
 	});
 
 	app.post('/upload',multer({ dest: 'views/photos/'}).single('avatar'), function (request, response){
 			console.log(request.file); //form fields
-
-		handle["uploadPost"](request,response,"photos/"+request.file.filename);
+			var photo="photos/"+request.file.filename;
+		handle["uploadPost"](request,response,photo);
 	});
 
 	app.post('/login',function (request, response){
@@ -33,7 +48,7 @@ function start(route,handle){
 
 	app.get('/:var', function (request, response) {
 		console.log("server "+request.body)
-	  	route(handle,'/'+request.params.var,response);
+	  	route(handle,'/'+request.params.var,request, response);
 	});
 
 	app.listen(3000, function () {
