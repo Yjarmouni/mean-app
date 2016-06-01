@@ -7,15 +7,13 @@ var tmpl;
 
 function start(request,response) {
 	tmpl = jsrender.templates('./views/index.html');
-	var name="";
-	var sess=request.session;
-	if(sess.name)
-		name="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
-	else
-		name=" <a href='/login'>login</a>";
-	html = tmpl.render({name : name});	
+
+	var content = jsrender.templates('./views/start.html');
+	var contenthtml= content.render();
+	var html = myrender(request,tmpl,contenthtml);
 	response.send(html);
 	response.end();
+	
 	
 }
 
@@ -25,7 +23,7 @@ function uploadPost(request,response,photo){
 
 	var name =request.session.name;
 	User.findOne({name :name},function(err,user){
-		console.log(user);
+		
 		document = {
 			name : name,
 			photo : photo,
@@ -37,39 +35,44 @@ function uploadPost(request,response,photo){
 	  		//exec('rm ' + __dirname+'/pubilic/'+user.value.photo , function (err, stdout, stderr) {});
 	  		if(user.value.photo!="photos/default"){
 	  			const fs = require('fs');
-				fs.unlink(__dirname+'/public/'+user.value.photo , (err) => {
+				fs.unlink(__dirname+'/public/'+user.value.photo , function(err){
 				  if (err) throw err;
-				  console.log('successfully deleted /tmp/hello');
+				  
 				});
 			}
-	  		console.log('updated, counter is ' + user.value.photo);
+	  		
 		});
 	});
 	
 
-	tmpl = jsrender.templates('./views/model.html');
-	var content="<img src='"+photo+"'></img>";
-	var html = tmpl.render({content: content});
-	response.send(html);
-	response.end();
+	response.redirect('/show');
 
 }
 
 function upload(request, response) {
-	tmpl = jsrender.templates('./views/up.html');
-	var html = tmpl.render({param: "Jim",ss : "ok bye"});
+	tmpl = jsrender.templates('./views/index.html');
+	var content = jsrender.templates('./views/up.html');
+	var contenthtml= content.render();
+	var html = myrender(request,tmpl,contenthtml);
 	response.send(html);
 	response.end();
 	
 }
 
 function find(request, response) {
-	exec("find /",
+	exec("ls /",
 		{setTimeout : 10000 , maxBuffer : 20000*1024 },
 		function(error,stdout,stderr){
-			response.writeHead(200,{"Content-Type":"text/plain"});
-			response.write(stdout);
+			tmpl = jsrender.templates('./views/index.html');
+			stdout=stdout.replace(/\n/g, "<br />");
+
+			stdout="<div id='find'><span style='color : #00BD3C;'><strong>p2p@WMD-2I-INPT</strong></span>:~$ ls /<br />"+stdout+"</div>";
+			var html = myrender(request,tmpl,stdout);
+			response.send(html);
 			response.end();
+			/*response.writeHead(200,{"Content-Type":"text/plain"});
+			response.write(stdout);
+			response.end();*/
 		});
 }
 
@@ -77,10 +80,9 @@ function show(request, response) {
 	var name = request.session.name;
 	User.findOne({name :name},function(err,user){
 		var photo = user.photo;
-		tmpl = jsrender.templates('./views/model.html');
-		var content="<img src='"+photo+"'></img>";
-		console.log(content);
-		var html = tmpl.render({content: content});
+		tmpl = jsrender.templates('./views/index.html');
+		var content="<img class='img-thumbnail photo' src='"+photo+"'></img>";
+		var html = myrender(request,tmpl,content);
 		response.send(html);
 		response.end();
 	});
@@ -93,22 +95,25 @@ function loginPost(request,response) {
 		if(!user){
 			tmpl = jsrender.templates('./views/login.html');
 			html = tmpl.render({message :"Username or password incorrect"});
+			var template = jsrender.templates('./views/index.html');
+			var content = template.render({content : html});
+			response.send(content);
 		}	
 		else{
 			sess=request.session;
 			sess.name=user.name;
-			var name ="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
-			tmpl = jsrender.templates('./views/index.html');
-			html = tmpl.render({name : name});
+			response.redirect('/start');
 		}
-		response.send(html);
-		response.end();
+		
 	});
 }
 
 function login(request, response) {
-	tmpl = jsrender.templates('./views/login.html');
-	var html = tmpl.render();
+
+	var htmlcontent = jsrender.templates('./views/login.html');
+	var content = htmlcontent.render({content : ''});
+	tmpl=jsrender.templates('./views/index.html');
+	var html=myrender(request,tmpl,content);
 	response.send(html);
 	response.end();
 }
@@ -119,6 +124,22 @@ function logout(request, response) {
 	sess.destroy();
 	response.redirect('/');
 }
+
+//utile functions
+
+function myrender(request,template,data){
+	var name='';
+	var sess=request.session;
+	if(sess.name)
+		name="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
+	else
+		name=" <a href='/login'>login</a>";
+	
+	return template.render({name : name,content : data});
+
+}
+
+
 
 exports.start = start;
 exports.upload = upload;

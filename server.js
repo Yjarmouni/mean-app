@@ -27,15 +27,14 @@ app.all('/:var',function (request, response, next) {
 
 function start(route,handle){
 	var multer  = require('multer');
-
-
+	
 	app.get('/', function (request, response) {
 		
 	  	route(handle,'/',request, response);
 	});
 
 	app.post('/upload',multer({ dest: 'public/photos/'}).single('avatar'), function (request, response){
-			console.log(request.file); //form fields
+
 			var photo="photos/"+request.file.filename;
 		handle["uploadPost"](request,response,photo);
 	});
@@ -47,11 +46,11 @@ function start(route,handle){
 
 
 	app.get('/:var', function (request, response) {
-		console.log("server "+request.body)
+
 	  	route(handle,'/'+request.params.var,request, response);
 	});
 
-	app.listen(3000, function () {
+	app.listen(8000, function () {
 		console.log('listening on port 3000 !')
 	});
 }
