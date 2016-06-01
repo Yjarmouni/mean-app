@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var session = require('express-session');
-
+var cfenv = require('cfenv');
 
 app.use(express.static('public'));
 app.engine('html', require('ejs').renderFile);
@@ -50,9 +50,12 @@ function start(route,handle){
 	  	route(handle,'/'+request.params.var,request, response);
 	});
 
-	app.listen(8000, function () {
-		console.log('listening on port 3000 !')
-	});
+	var appEnv = cfenv.getAppEnv();
+	
+	app.listen(appEnv.port, '0.0.0.0', function() {
+  // print a message when the server starts listening
+  console.log("server starting on " + appEnv.url);
+});
 }
 
 exports.start = start;
