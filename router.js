@@ -1,6 +1,4 @@
-function route(handle,pathname,request, response) {
-	console.log("here");
-	console.log("About to route a request for : " + pathname);
+function route(handle,pathname,request, response) {	
 	if(typeof handle[pathname]  === 'function' ){
 		handle[pathname](request, response);
 	}
@@ -9,9 +7,7 @@ function route(handle,pathname,request, response) {
 		response.writeHead(404,{"ContentType" : "text/html"});
 		response.write("404 : Ressources not found");
 		response.end();
-				}
-
-	// body...
+	}
 }
 
 exports.route = route;
