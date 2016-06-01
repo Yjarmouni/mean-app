@@ -122,7 +122,7 @@ function registerPost(request, response) {
 				var document = {
 					name : request.body.name,
 					password : request.body.password,
-					photo : "pothos/default"
+					photo : "photos/default"
 				}
 				var user = new User(document);
 				user.save();
