@@ -7,46 +7,35 @@ var tmpl;
 
 function start(request,response) {
 	tmpl = jsrender.templates('./views/index.html');
-
 	var content = jsrender.templates('./views/start.html');
 	var contenthtml= content.render();
 	var html = myrender(request,tmpl,contenthtml);
 	response.send(html);
 	response.end();
-	
-	
 }
 
 function uploadPost(request,response,photo){
 
 	var document = {} ;
-
 	var name =request.session.name;
 	User.findOne({name :name},function(err,user){
-		
 		document = {
 			name : name,
 			photo : photo,
 			password : user.password
 		};
-
 		User.findAndModify({ name: name}, [], document, {}, function (err, user) {
 	  		if (err) throw err;
-	  		//exec('rm ' + __dirname+'/pubilic/'+user.value.photo , function (err, stdout, stderr) {});
 	  		if(user.value.photo!="photos/default"){
 	  			const fs = require('fs');
 				fs.unlink(__dirname+'/public/'+user.value.photo , function(err){
 				  if (err) throw err;
-				  
 				});
 			}
 	  		
 		});
 	});
-	
-
 	response.redirect('/show');
-
 }
 
 function upload(request, response) {
@@ -70,9 +59,6 @@ function find(request, response) {
 			var html = myrender(request,tmpl,stdout);
 			response.send(html);
 			response.end();
-			/*response.writeHead(200,{"Content-Type":"text/plain"});
-			response.write(stdout);
-			response.end();*/
 		});
 }
 
@@ -90,8 +76,11 @@ function show(request, response) {
 
 function loginPost(request,response) {
 	var html;
-	User.findOne(request.body,function (err, user) {
-		
+	var document = {
+		name : request.body.name,
+		password : request.body.password,
+	}
+	User.findOne(document,function (err, user) {
 		if(!user){
 			tmpl = jsrender.templates('./views/login.html');
 			html = tmpl.render({message :"Username or password incorrect"});
@@ -107,9 +96,43 @@ function loginPost(request,response) {
 		
 	});
 }
+function registerPost(request, response) {
+	if(request.body.password != request.body.confirmpassword){
+		var html;
+		tmpl = jsrender.templates('./views/register.html');
+		html = tmpl.render({message :"Password mismatch !"});
+		var template = jsrender.templates('./views/index.html');
+		var content = template.render({content : html});
+		response.send(content);
+	}
+	else{
+		var document = {
+			name : request.body.name
+		}
+		User.findOne(document,function (err, user) {
+			if(user){
+				var html;
+				tmpl = jsrender.templates('./views/register.html');
+				html = tmpl.render({message :"Username exists already !"});
+				var template = jsrender.templates('./views/index.html');
+				var content = template.render({content : html});
+				response.send(content);
+			}
+			else{
+				var document = {
+					name : request.body.name,
+					password : request.body.password,
+					photo : "pothos/default"
+				}
+				var user = new User(document);
+				user.save();
+				loginPost(request,response);
+			}
+		});
+	}
+}
 
 function login(request, response) {
-
 	var htmlcontent = jsrender.templates('./views/login.html');
 	var content = htmlcontent.render({content : ''});
 	tmpl=jsrender.templates('./views/index.html');
@@ -125,6 +148,18 @@ function logout(request, response) {
 	response.redirect('/');
 }
 
+
+
+function register(request, response) {
+	
+	var html;
+	tmpl = jsrender.templates('./views/register.html');
+	html = tmpl.render({message :""});
+	var template = jsrender.templates('./views/index.html');
+	var content = template.render({content : html});
+	response.send(content);
+}
+
 //utile functions
 
 function myrender(request,template,data){
@@ -133,7 +168,7 @@ function myrender(request,template,data){
 	if(sess.name)
 		name="<a href='#'>"+ sess.name+"</a></li><li> <a href='/logout'>logout</a>";
 	else
-		name=" <a href='/login'>login</a>";
+		name=" <a href='/login'>login</a></li><li><a href='/register'>register</a>";
 	
 	return template.render({name : name,content : data});
 
@@ -144,8 +179,10 @@ function myrender(request,template,data){
 exports.start = start;
 exports.upload = upload;
 exports.find = find;
-exports.show= show;
-exports.login=login;
-exports.logout=logout;
-exports.uploadPost=uploadPost;
-exports.loginPost=loginPost;
+exports.show = show;
+exports.login = login;
+exports.logout = logout;
+exports.register = register;
+exports.uploadPost = uploadPost;
+exports.loginPost = loginPost;
+exports.registerPost = registerPost;

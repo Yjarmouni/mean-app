@@ -6,13 +6,17 @@ var requestHandlers = require("./requestHandlers");
 var handle = {};
 handle['/']= requestHandlers.start;
 handle["/start"]=requestHandlers.start;
-handle["/upload"]= requestHandlers.upload;
 handle["/find"]=requestHandlers.find;
 handle["/show"]=requestHandlers.show;
-handle["/login"]=requestHandlers.login;
 handle["/logout"]=requestHandlers.logout;
-handle["uploadPost"]=requestHandlers.uploadPost;
-handle["loginPost"]=requestHandlers.loginPost;
 
+handle["/register"]=requestHandlers.register;        
+handle["registerPost"]=requestHandlers.registerPost;
+
+handle["/upload"]= requestHandlers.upload;
+handle["uploadPost"]=requestHandlers.uploadPost;
+
+handle["/login"]=requestHandlers.login;
+handle["loginPost"]=requestHandlers.loginPost;
 
 server.start(router.route,handle);
